@@ -1,0 +1,13 @@
+# ملفات البيانات — لا ترفعها على GitHub
+data/
+*.xlsx
+*.xls
+*.csv
+
+# ملفات النظام
+__pycache__/
+*.pyc
+.DS_Store
+
+# ملف الأسرار — مهم جداً لا ترفعه
+.streamlit/secrets.toml
