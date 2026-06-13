@@ -3,7 +3,6 @@ import streamlit as st
 import io
 import requests
 
-# ===== روابط ملفات Google Drive =====
 DRIVE_FILES = {
     "roaya_cash": "1ALVnrsaypbI-0lZ8EW3mfLWGhTPZ5EQP",
     "clients":    "1SV9TVYSWTt1-V8m1sGtdRJcgjszfCvmV",
@@ -11,32 +10,39 @@ DRIVE_FILES = {
 }
 
 def download_excel(file_id):
-    """تحميل ملف Excel من Google Drive"""
-    # رابط التحميل المباشر
-    url = f"https://drive.google.com/uc?export=download&id={file_id}&confirm=t"
+    """تحميل ملف Excel من Google Drive بطريقة موثوقة"""
+    # استخدام رابط export مباشر من Google Sheets
+    url = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx&id={file_id}"
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+    }
+    
     session = requests.Session()
-    response = session.get(url, timeout=30)
+    response = session.get(url, headers=headers, timeout=60, allow_redirects=True)
+    response.raise_for_status()
     
-    # لو Google طلب تأكيد (للملفات الكبيرة)
-    if "virus scan warning" in response.text.lower() or len(response.content) < 1000:
-        # جرب رابط export مختلف
-        url2 = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx"
-        response = session.get(url2, timeout=30)
+    # التحقق إن المحتوى xlsx فعلاً
+    content = response.content
+    if content[:4] == b'PK\x03\x04':  # xlsx magic bytes
+        return io.BytesIO(content)
     
-    return io.BytesIO(response.content)
+    # لو مش xlsx جرب رابط تاني
+    url2 = f"https://drive.google.com/uc?id={file_id}&export=download&confirm=t"
+    response2 = session.get(url2, headers=headers, timeout=60, allow_redirects=True)
+    return io.BytesIO(response2.content)
 
 @st.cache_data(ttl=300)
 def load_excel_from_drive(file_key, sheet_name, header=0, nrows=None):
     try:
         buf = download_excel(DRIVE_FILES[file_key])
-        df = pd.read_excel(buf, sheet_name=sheet_name, header=header, 
-                          nrows=nrows, engine="openpyxl")
+        df = pd.read_excel(buf, sheet_name=sheet_name, header=header,
+                           nrows=nrows, engine="openpyxl")
         return df
     except Exception as e:
         st.error(f"خطأ في تحميل الملف ({file_key} - {sheet_name}): {e}")
         return pd.DataFrame()
 
-# ===== تحميل بيانات الخزينة =====
 @st.cache_data(ttl=300)
 def load_khazina():
     try:
