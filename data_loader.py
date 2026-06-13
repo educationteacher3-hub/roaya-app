@@ -1,28 +1,36 @@
 import pandas as pd
-import numpy as np
 import streamlit as st
 import io
 import requests
 
 # ===== روابط ملفات Google Drive =====
 DRIVE_FILES = {
-    "roaya_cash": "1ALVnrsaypbI-0lZ8EW3mfLWGhTPZ5EQP",  # ROAYA__CASH.xlsx
-    "clients":    "1SV9TVYSWTt1-V8m1sGtdRJcgjszfCvmV",  # حسابات_العملاء_والموردين.xlsx
-    "itqan":      "1muSQN0yLi2nVD80Ou7MaVFdoDKaKhYXX",  # اتقان.xlsx
+    "roaya_cash": "1ALVnrsaypbI-0lZ8EW3mfLWGhTPZ5EQP",
+    "clients":    "1SV9TVYSWTt1-V8m1sGtdRJcgjszfCvmV",
+    "itqan":      "1muSQN0yLi2nVD80Ou7MaVFdoDKaKhYXX",
 }
 
-def drive_url(file_id):
-    return f"https://drive.google.com/uc?export=download&id={file_id}"
+def download_excel(file_id):
+    """تحميل ملف Excel من Google Drive"""
+    # رابط التحميل المباشر
+    url = f"https://drive.google.com/uc?export=download&id={file_id}&confirm=t"
+    session = requests.Session()
+    response = session.get(url, timeout=30)
+    
+    # لو Google طلب تأكيد (للملفات الكبيرة)
+    if "virus scan warning" in response.text.lower() or len(response.content) < 1000:
+        # جرب رابط export مختلف
+        url2 = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx"
+        response = session.get(url2, timeout=30)
+    
+    return io.BytesIO(response.content)
 
 @st.cache_data(ttl=300)
 def load_excel_from_drive(file_key, sheet_name, header=0, nrows=None):
-    """تحميل شيت من Google Drive"""
     try:
-        url = drive_url(DRIVE_FILES[file_key])
-        r = requests.get(url, timeout=30)
-        r.raise_for_status()
-        buf = io.BytesIO(r.content)
-        df = pd.read_excel(buf, sheet_name=sheet_name, header=header, nrows=nrows, engine="openpyxl")
+        buf = download_excel(DRIVE_FILES[file_key])
+        df = pd.read_excel(buf, sheet_name=sheet_name, header=header, 
+                          nrows=nrows, engine="openpyxl")
         return df
     except Exception as e:
         st.error(f"خطأ في تحميل الملف ({file_key} - {sheet_name}): {e}")
@@ -49,34 +57,20 @@ def load_khazina():
         st.error(f"خطأ في تحميل الخزينة: {e}")
         return pd.DataFrame()
 
-# ===== تحميل قائمة الدخل =====
 @st.cache_data(ttl=300)
 def load_income_statement():
     try:
         return load_excel_from_drive("roaya_cash", "قائمة الدخل", header=1)
-    except Exception as e:
-        st.error(f"خطأ في قائمة الدخل: {e}")
+    except:
         return pd.DataFrame()
 
-# ===== تحميل تحليل المصروفات =====
 @st.cache_data(ttl=300)
 def load_expense_analysis():
     try:
         return load_excel_from_drive("roaya_cash", "تحليل مصروفات شهري", header=None)
-    except Exception as e:
-        st.error(f"خطأ في تحليل المصروفات: {e}")
+    except:
         return pd.DataFrame()
 
-# ===== تحميل العملاء =====
-@st.cache_data(ttl=300)
-def load_clients():
-    try:
-        return load_excel_from_drive("clients", "العملاء", header=None)
-    except Exception as e:
-        st.error(f"خطأ في العملاء: {e}")
-        return pd.DataFrame()
-
-# ===== تحميل الموردين =====
 @st.cache_data(ttl=300)
 def load_suppliers():
     try:
@@ -95,7 +89,6 @@ def load_suppliers():
         st.error(f"خطأ في الموردين: {e}")
         return pd.DataFrame()
 
-# ===== تحميل قائمة العملاء والموردين =====
 @st.cache_data(ttl=300)
 def load_clients_list():
     try:
@@ -107,10 +100,9 @@ def load_clients_list():
         suppliers.columns = ["المورد", "النسبة"]
         return clients, suppliers
     except Exception as e:
-        st.error(f"خطأ في قوائم العملاء والموردين: {e}")
+        st.error(f"خطأ في القوائم: {e}")
         return pd.DataFrame(), pd.DataFrame()
 
-# ===== تحميل اتقان =====
 @st.cache_data(ttl=300)
 def load_itqan():
     try:
@@ -130,7 +122,6 @@ def load_itqan():
         st.error(f"خطأ في اتقان: {e}")
         return pd.DataFrame()
 
-# ===== تحميل ملخص اتقان =====
 @st.cache_data(ttl=300)
 def load_itqan_summary():
     try:
@@ -146,7 +137,6 @@ def load_itqan_summary():
     except:
         return {}
 
-# ===== مساعدات =====
 MONTHS_AR = {
     1:"يناير", 2:"فبراير", 3:"مارس", 4:"أبريل",
     5:"مايو",  6:"يونيو",  7:"يوليو", 8:"أغسطس",
