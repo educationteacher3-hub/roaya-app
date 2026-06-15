@@ -6,9 +6,9 @@ from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
 DRIVE_FILES = {
-    "roaya_cash": "1ALVnrsaypbI-0lZ8EW3mfLWGhTPZ5EQP",
-    "clients":    "1SV9TVYSWTt1-V8m1sGtdRJcgjszfCvmV",
-    "itqan":      "1muSQN0yLi2nVD80Ou7MaVFdoDKaKhYXX",
+    "roaya_cash": "1i0kLi4c5IAMQ5TF5VHzZthjrBZaJAKQihCsZNYLkldQ",
+    "clients":    "1RI_sePLXgDi66HpFhhv3PW0V63eIBSLis_Iv_VIZTAI",
+    "itqan":      "1u558DTYFCdCv6KBDSPSSGc3pxALOTIbNta6llNgj6dk",
 }
 
 def get_drive_service():
