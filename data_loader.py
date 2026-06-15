@@ -1,12 +1,10 @@
 import pandas as pd
 import streamlit as st
 import io
-import json
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
 from googleapiclient.http import MediaIoBaseDownload
 
-# ===== IDs ملفات Google Drive =====
 DRIVE_FILES = {
     "roaya_cash": "1ALVnrsaypbI-0lZ8EW3mfLWGhTPZ5EQP",
     "clients":    "1SV9TVYSWTt1-V8m1sGtdRJcgjszfCvmV",
@@ -14,7 +12,6 @@ DRIVE_FILES = {
 }
 
 def get_drive_service():
-    """إنشاء اتصال بـ Google Drive API"""
     creds_dict = dict(st.secrets["gcp_service_account"])
     creds = service_account.Credentials.from_service_account_info(
         creds_dict,
@@ -24,14 +21,16 @@ def get_drive_service():
 
 @st.cache_data(ttl=300)
 def download_excel(file_key):
-    """تحميل ملف Excel من Google Drive عبر API"""
     try:
         service = get_drive_service()
         file_id = DRIVE_FILES[file_key]
-        request = service.files().export_media(
-            fileId=file_id,
-            mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+        try:
+            request = service.files().export_media(
+                fileId=file_id,
+                mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        except:
+            request = service.files().get_media(fileId=file_id)
         buf = io.BytesIO()
         downloader = MediaIoBaseDownload(buf, request)
         done = False
@@ -40,21 +39,8 @@ def download_excel(file_key):
         buf.seek(0)
         return buf
     except Exception as e:
-        # لو مش Google Sheets جرب تحميل مباشر
-        try:
-            service = get_drive_service()
-            file_id = DRIVE_FILES[file_key]
-            request = service.files().get_media(fileId=file_id)
-            buf = io.BytesIO()
-            downloader = MediaIoBaseDownload(buf, request)
-            done = False
-            while not done:
-                _, done = downloader.next_chunk()
-            buf.seek(0)
-            return buf
-        except Exception as e2:
-            st.error(f"خطأ في تحميل الملف ({file_key}): {e2}")
-            return None
+        st.error(f"خطأ في تحميل ({file_key}): {e}")
+        return None
 
 @st.cache_data(ttl=300)
 def load_excel_from_drive(file_key, sheet_name, header=0, nrows=None):
@@ -66,8 +52,11 @@ def load_excel_from_drive(file_key, sheet_name, header=0, nrows=None):
                            nrows=nrows, engine="openpyxl")
         return df
     except Exception as e:
-        st.error(f"خطأ في قراءة الشيت ({file_key} - {sheet_name}): {e}")
+        st.error(f"خطأ في قراءة ({file_key} - {sheet_name}): {e}")
         return pd.DataFrame()
+
+def parse_date(series):
+    return pd.to_datetime(series, errors="coerce")
 
 @st.cache_data(ttl=300)
 def load_khazina():
@@ -76,7 +65,7 @@ def load_khazina():
         if df.empty: return df
         df.columns = ["التاريخ", "البيان", "مدين", "دائن", "الرصيد", "النوع"]
         df = df.dropna(subset=["البيان"])
-        df["التاريخ"] = pd.to_datetime(df["التاريخ"], errors="coerce")
+        df["التاريخ"] = parse_date(df["التاريخ"])
         df["مدين"]   = pd.to_numeric(df["مدين"],   errors="coerce").fillna(0)
         df["دائن"]   = pd.to_numeric(df["دائن"],   errors="coerce").fillna(0)
         df["الرصيد"] = pd.to_numeric(df["الرصيد"], errors="coerce").fillna(0)
@@ -114,7 +103,7 @@ def load_suppliers():
         df["قيمة الفاتورة"] = pd.to_numeric(df["قيمة الفاتورة"], errors="coerce").fillna(0)
         df["القيمة"]        = pd.to_numeric(df["القيمة"],        errors="coerce").fillna(0)
         df["النسبة"]        = pd.to_numeric(df["النسبة"],        errors="coerce").fillna(0)
-        df["تاريخ الفاتورة"] = pd.to_datetime(df["تاريخ الفاتورة"], errors="coerce")
+        df["تاريخ الفاتورة"] = parse_date(df["تاريخ الفاتورة"])
         return df
     except Exception as e:
         st.error(f"خطأ في الموردين: {e}")
@@ -142,7 +131,7 @@ def load_itqan():
         df.columns = ["التاريخ", "البيان", "نوع الحركة", "سعر الصرف",
                       "مدين EGP", "دائن EGP", "مدين AED", "دائن AED", "الرصيد AED"]
         df = df.dropna(subset=["البيان"])
-        df["التاريخ"] = pd.to_datetime(df["التاريخ"], errors="coerce")
+        df["التاريخ"] = parse_date(df["التاريخ"])
         for col in ["مدين EGP", "دائن EGP", "مدين AED", "دائن AED", "الرصيد AED"]:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
         df["سعر الصرف"] = pd.to_numeric(df["سعر الصرف"], errors="coerce").fillna(0)
