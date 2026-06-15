@@ -114,8 +114,7 @@ def load_suppliers():
         df["قيمة الفاتورة"] = pd.to_numeric(df["قيمة الفاتورة"], errors="coerce").fillna(0)
         df["القيمة"]        = pd.to_numeric(df["القيمة"],        errors="coerce").fillna(0)
         df["النسبة"]        = pd.to_numeric(df["النسبة"],        errors="coerce").fillna(0)
-        df["تاريخ الفاتورة"] = pd.to_datetime(df["تاريخ الفاتورة"], errors="coerce",
-                                               origin="1899-12-30", unit="D")
+        df["تاريخ الفاتورة"] = pd.to_datetime(df["تاريخ الفاتورة"], errors="coerce")
         return df
     except Exception as e:
         st.error(f"خطأ في الموردين: {e}")
@@ -143,8 +142,7 @@ def load_itqan():
         df.columns = ["التاريخ", "البيان", "نوع الحركة", "سعر الصرف",
                       "مدين EGP", "دائن EGP", "مدين AED", "دائن AED", "الرصيد AED"]
         df = df.dropna(subset=["البيان"])
-        df["التاريخ"] = pd.to_datetime(df["التاريخ"], errors="coerce",
-                                        origin="1899-12-30", unit="D")
+        df["التاريخ"] = pd.to_datetime(df["التاريخ"], errors="coerce")
         for col in ["مدين EGP", "دائن EGP", "مدين AED", "دائن AED", "الرصيد AED"]:
             df[col] = pd.to_numeric(df[col], errors="coerce").fillna(0)
         df["سعر الصرف"] = pd.to_numeric(df["سعر الصرف"], errors="coerce").fillna(0)
