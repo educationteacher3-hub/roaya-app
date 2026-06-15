@@ -76,7 +76,7 @@ def load_khazina():
         if df.empty: return df
         df.columns = ["التاريخ", "البيان", "مدين", "دائن", "الرصيد", "النوع"]
         df = df.dropna(subset=["البيان"])
-        df["التاريخ"] = pd.to_datetime(df["التاريخ"], errors="coerce", origin="1899-12-30", unit="D")
+        df["التاريخ"] = pd.to_datetime(df["التاريخ"], errors="coerce")
         df["مدين"]   = pd.to_numeric(df["مدين"],   errors="coerce").fillna(0)
         df["دائن"]   = pd.to_numeric(df["دائن"],   errors="coerce").fillna(0)
         df["الرصيد"] = pd.to_numeric(df["الرصيد"], errors="coerce").fillna(0)
