@@ -1,46 +1,72 @@
 import pandas as pd
 import streamlit as st
 import io
-import requests
+import json
+from google.oauth2 import service_account
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
 
+# ===== IDs ملفات Google Drive =====
 DRIVE_FILES = {
     "roaya_cash": "1ALVnrsaypbI-0lZ8EW3mfLWGhTPZ5EQP",
     "clients":    "1SV9TVYSWTt1-V8m1sGtdRJcgjszfCvmV",
     "itqan":      "1muSQN0yLi2nVD80Ou7MaVFdoDKaKhYXX",
 }
 
-def download_excel(file_id):
-    """تحميل ملف Excel من Google Drive بطريقة موثوقة"""
-    # استخدام رابط export مباشر من Google Sheets
-    url = f"https://docs.google.com/spreadsheets/d/{file_id}/export?format=xlsx&id={file_id}"
-    
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-    }
-    
-    session = requests.Session()
-    response = session.get(url, headers=headers, timeout=60, allow_redirects=True)
-    response.raise_for_status()
-    
-    # التحقق إن المحتوى xlsx فعلاً
-    content = response.content
-    if content[:4] == b'PK\x03\x04':  # xlsx magic bytes
-        return io.BytesIO(content)
-    
-    # لو مش xlsx جرب رابط تاني
-    url2 = f"https://drive.google.com/uc?id={file_id}&export=download&confirm=t"
-    response2 = session.get(url2, headers=headers, timeout=60, allow_redirects=True)
-    return io.BytesIO(response2.content)
+def get_drive_service():
+    """إنشاء اتصال بـ Google Drive API"""
+    creds_dict = dict(st.secrets["gcp_service_account"])
+    creds = service_account.Credentials.from_service_account_info(
+        creds_dict,
+        scopes=["https://www.googleapis.com/auth/drive.readonly"]
+    )
+    return build("drive", "v3", credentials=creds)
+
+@st.cache_data(ttl=300)
+def download_excel(file_key):
+    """تحميل ملف Excel من Google Drive عبر API"""
+    try:
+        service = get_drive_service()
+        file_id = DRIVE_FILES[file_key]
+        request = service.files().export_media(
+            fileId=file_id,
+            mimeType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+        buf = io.BytesIO()
+        downloader = MediaIoBaseDownload(buf, request)
+        done = False
+        while not done:
+            _, done = downloader.next_chunk()
+        buf.seek(0)
+        return buf
+    except Exception as e:
+        # لو مش Google Sheets جرب تحميل مباشر
+        try:
+            service = get_drive_service()
+            file_id = DRIVE_FILES[file_key]
+            request = service.files().get_media(fileId=file_id)
+            buf = io.BytesIO()
+            downloader = MediaIoBaseDownload(buf, request)
+            done = False
+            while not done:
+                _, done = downloader.next_chunk()
+            buf.seek(0)
+            return buf
+        except Exception as e2:
+            st.error(f"خطأ في تحميل الملف ({file_key}): {e2}")
+            return None
 
 @st.cache_data(ttl=300)
 def load_excel_from_drive(file_key, sheet_name, header=0, nrows=None):
     try:
-        buf = download_excel(DRIVE_FILES[file_key])
+        buf = download_excel(file_key)
+        if buf is None:
+            return pd.DataFrame()
         df = pd.read_excel(buf, sheet_name=sheet_name, header=header,
                            nrows=nrows, engine="openpyxl")
         return df
     except Exception as e:
-        st.error(f"خطأ في تحميل الملف ({file_key} - {sheet_name}): {e}")
+        st.error(f"خطأ في قراءة الشيت ({file_key} - {sheet_name}): {e}")
         return pd.DataFrame()
 
 @st.cache_data(ttl=300)
