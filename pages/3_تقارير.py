@@ -1,7 +1,7 @@
 import streamlit as st
-from auth import check_password, logout
 import pandas as pd
-from data_loader import load_khazina, load_income_statement, fmt, MONTHS_AR
+from auth import check_password, logout
+from data_loader import load_khazina, load_excel_from_drive, fmt, MONTHS_AR
 
 st.set_page_config(page_title="التقارير المالية", page_icon="📈", layout="wide")
 
@@ -31,28 +31,6 @@ html, body, [class*="css"] { direction: rtl; }
 .num-pos { color:#1a7f74; font-weight:600; font-family:monospace; }
 .num-neg { color:#c0392b; font-weight:600; font-family:monospace; }
 .num { font-family:monospace; font-size:12.5px; }
-.income-box {
-    background:white; border:1px solid #d4dce5; border-radius:10px;
-    overflow:hidden; box-shadow:0 2px 8px rgba(15,25,35,0.06);
-}
-.income-box-header {
-    padding:12px 16px; font-size:14px; font-weight:700;
-    display:flex; justify-content:space-between; align-items:center;
-    border-bottom:1px solid #e8edf3;
-}
-.income-box-row {
-    display:flex; justify-content:space-between; align-items:center;
-    padding:9px 16px; border-bottom:1px solid #f0f4f8; font-size:13px;
-}
-.income-box-total {
-    display:flex; justify-content:space-between; align-items:center;
-    padding:12px 16px; background:#0f1923; color:white; font-weight:700;
-}
-.net-banner {
-    background:white; border:2px solid #1a7f74; border-radius:10px;
-    padding:16px 20px; display:flex; justify-content:space-between; align-items:center;
-    margin:16px 0;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -62,16 +40,21 @@ if not check_password():
 st.title("📈 التقارير المالية")
 
 df = load_khazina()
-
 if df.empty:
     st.error("تعذّر تحميل البيانات.")
     st.stop()
 
-tab1, tab2, tab3 = st.tabs(["📊 قائمة الدخل", "📅 مقارنة الأشهر", "💸 تحليل المصروفات"])
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "📊 قائمة الدخل",
+    "📅 مقارنة الأشهر",
+    "💸 تحليل المصروفات",
+    "📈 تحليل مصروفات شهري",
+    "📋 بيان الإيرادات"
+])
 
 # ===== تاب 1: قائمة الدخل =====
 with tab1:
-    years  = sorted(df["السنة"].dropna().unique().astype(int).tolist())
+    years = sorted(df["السنة"].dropna().unique().astype(int).tolist())
     months_available = sorted(df["الشهر"].dropna().unique().astype(int).tolist())
 
     col_y, col_m = st.columns([1, 2])
@@ -82,92 +65,60 @@ with tab1:
         sel_month_name = st.selectbox("الشهر", month_names, index=len(month_names)-1)
         sel_month = {v: k for k, v in MONTHS_AR.items()}[sel_month_name]
 
-    # فلترة الشهر
     mask = (df["السنة"] == sel_year) & (df["الشهر"] == sel_month)
     df_month = df[mask]
 
     if df_month.empty:
         st.warning("لا توجد بيانات للشهر المختار.")
     else:
-        # تجميع الإيرادات حسب النوع
         revenue_types = df_month[df_month["مدين"] > 0].groupby("النوع")["مدين"].sum().sort_values(ascending=False)
         expense_types = df_month[df_month["دائن"] > 0].groupby("النوع")["دائن"].sum().sort_values(ascending=False)
 
-        total_rev  = revenue_types.sum()
-        total_exp  = expense_types.sum()
-        net        = total_rev - total_exp
+        total_rev = revenue_types.sum()
+        total_exp = expense_types.sum()
+        net = total_rev - total_exp
 
-        # KPIs
         c1, c2, c3 = st.columns(3)
         with c1: st.metric("📥 إجمالي الإيرادات", f"{fmt(total_rev)} ج")
         with c2: st.metric("📤 إجمالي المصروفات", f"{fmt(total_exp)} ج")
         with c3: st.metric("📊 صافي الشهر", f"{fmt(net)} ج", delta=f"{fmt(net)} ج")
 
-        # صندوقا الإيرادات والمصروفات
         col_rev, col_exp = st.columns(2)
 
         with col_rev:
             st.markdown("<div class='section-title'>📥 الإيرادات</div>", unsafe_allow_html=True)
-            rows_html = ""
+            rows = ""
             for nوع, val in revenue_types.items():
                 pct = (val / total_rev * 100) if total_rev > 0 else 0
-                rows_html += f"""
-                <div class='income-box-row'>
-                    <span style='color:#3a4a58'>{nوع}</span>
-                    <div style='display:flex;gap:12px;align-items:center'>
-                        <span style='font-size:11px;color:#7a8e9e;background:#f0f4f8;padding:2px 8px;border-radius:10px'>{pct:.1f}%</span>
-                        <span class='num-pos'>{fmt(val)}</span>
-                    </div>
-                </div>"""
-            st.markdown(f"""
-            <div class='income-box'>
-                <div class='income-box-header' style='background:#e0f4f2'>
-                    <span>البند</span><span>القيمة</span>
-                </div>
-                {rows_html}
-                <div class='income-box-total'>
-                    <span>إجمالي الإيرادات</span>
-                    <span style='font-family:monospace'>{fmt(total_rev)}</span>
-                </div>
-            </div>""", unsafe_allow_html=True)
+                rows += f"<tr><td>{nوع}</td><td class='num'>{pct:.1f}%</td><td class='num-pos'>{fmt(val)}</td></tr>"
+            rows += f"<tr class='total-row'><td><strong>الإجمالي</strong></td><td></td><td class='num-pos'><strong>{fmt(total_rev)}</strong></td></tr>"
+            st.markdown(f"""<table class='styled-table'>
+              <thead><tr><th>البند</th><th>النسبة</th><th>القيمة</th></tr></thead>
+              <tbody>{rows}</tbody></table>""", unsafe_allow_html=True)
 
         with col_exp:
             st.markdown("<div class='section-title'>📤 المصروفات</div>", unsafe_allow_html=True)
-            rows_html = ""
+            rows = ""
             for nوع, val in expense_types.items():
                 pct = (val / total_exp * 100) if total_exp > 0 else 0
-                rows_html += f"""
-                <div class='income-box-row'>
-                    <span style='color:#3a4a58'>{nوع}</span>
-                    <div style='display:flex;gap:12px;align-items:center'>
-                        <span style='font-size:11px;color:#7a8e9e;background:#f0f4f8;padding:2px 8px;border-radius:10px'>{pct:.1f}%</span>
-                        <span class='num-neg'>{fmt(val)}</span>
-                    </div>
-                </div>"""
-            st.markdown(f"""
-            <div class='income-box'>
-                <div class='income-box-header' style='background:#fdecea'>
-                    <span>البند</span><span>القيمة</span>
-                </div>
-                {rows_html}
-                <div class='income-box-total'>
-                    <span>إجمالي المصروفات</span>
-                    <span style='font-family:monospace'>{fmt(total_exp)}</span>
-                </div>
-            </div>""", unsafe_allow_html=True)
+                rows += f"<tr><td>{nوع}</td><td class='num'>{pct:.1f}%</td><td class='num-neg'>{fmt(val)}</td></tr>"
+            rows += f"<tr class='total-row'><td><strong>الإجمالي</strong></td><td></td><td class='num-neg'><strong>{fmt(total_exp)}</strong></td></tr>"
+            st.markdown(f"""<table class='styled-table'>
+              <thead><tr><th>البند</th><th>النسبة</th><th>القيمة</th></tr></thead>
+              <tbody>{rows}</tbody></table>""", unsafe_allow_html=True)
 
-        # صافي الشهر
         net_color = "#1a7f74" if net >= 0 else "#c0392b"
         net_label = "فائض ✅" if net >= 0 else "عجز ❌"
         sign = "+" if net >= 0 else ""
-        st.markdown(f"""
-        <div class='net-banner' style='border-color:{net_color}'>
-            <span style='font-size:15px;font-weight:700'>صافي {sel_month_name} {sel_year} — {net_label}</span>
-            <span style='font-family:monospace;font-size:22px;font-weight:900;color:{net_color}'>{sign}{fmt(net)} ج</span>
+        st.markdown(f"""<div style="background:white;border:2px solid {net_color};border-radius:10px;
+            padding:16px 20px;display:flex;justify-content:space-between;align-items:center;margin:16px 0">
+            <span style="font-size:15px;font-weight:700">صافي {sel_month_name} {sel_year} — {net_label}</span>
+            <span style="font-family:monospace;font-size:22px;font-weight:900;color:{net_color}">{sign}{fmt(net)} ج</span>
         </div>""", unsafe_allow_html=True)
 
 # ===== تاب 2: مقارنة الأشهر =====
 with tab2:
+    years = sorted(df["السنة"].dropna().unique().astype(int).tolist())
     sel_year2 = st.selectbox("السنة", years, index=len(years)-1, key="year2")
     df_year = df[df["السنة"] == sel_year2]
 
@@ -179,13 +130,14 @@ with tab2:
     monthly["صافي"] = monthly["إيرادات"] - monthly["مصروفات"]
     monthly = monthly.sort_values("الشهر")
 
-    # KPI السنوي
     c1, c2, c3, c4 = st.columns(4)
     with c1: st.metric("إجمالي إيرادات السنة",  f"{fmt(monthly['إيرادات'].sum())} ج")
     with c2: st.metric("إجمالي مصروفات السنة", f"{fmt(monthly['مصروفات'].sum())} ج")
     with c3: st.metric("صافي السنة",             f"{fmt(monthly['صافي'].sum())} ج")
-    with c4: st.metric("أفضل شهر",
-        monthly.loc[monthly["صافي"].idxmax(), "الشهر_اسم"] if len(monthly) > 0 else "—")
+    with c4:
+        if len(monthly) > 0:
+            best = monthly.loc[monthly["صافي"].idxmax(), "الشهر_اسم"]
+            st.metric("أفضل شهر", best)
 
     st.markdown("<div class='section-title'>مقارنة شهرية</div>", unsafe_allow_html=True)
 
@@ -194,15 +146,15 @@ with tab2:
         net_cls = "net-pos" if r["صافي"] >= 0 else "net-neg"
         nc = "num-pos" if r["صافي"] >= 0 else "num-neg"
         sign = "+" if r["صافي"] >= 0 else ""
+        pct = abs(r["صافي"]/r["إيرادات"]*100) if r["إيرادات"] > 0 else 0
         rows += f"""<tr class='{net_cls}'>
           <td><strong>{r['الشهر_اسم']}</strong></td>
           <td class='num-pos'>{fmt(r['إيرادات'])}</td>
           <td class='num-neg'>{fmt(r['مصروفات'])}</td>
           <td class='{nc}'>{sign}{fmt(r['صافي'])}</td>
-          <td class='num'>{'▲' if r['صافي']>=0 else '▼'} {abs(r['صافي']/r['إيرادات']*100):.1f}%</td>
+          <td class='num'>{pct:.1f}%</td>
         </tr>"""
 
-    # صف الإجمالي
     tot_rev = monthly["إيرادات"].sum()
     tot_exp = monthly["مصروفات"].sum()
     tot_net = monthly["صافي"].sum()
@@ -215,15 +167,15 @@ with tab2:
       <td class='num'>—</td>
     </tr>"""
 
-    st.markdown(f"""
-    <table class='styled-table'>
+    st.markdown(f"""<table class='styled-table'>
       <thead><tr><th>الشهر</th><th>الإيرادات</th><th>المصروفات</th><th>الصافي</th><th>نسبة الصافي</th></tr></thead>
-      <tbody>{rows}</tbody>
-    </table>""", unsafe_allow_html=True)
+      <tbody>{rows}</tbody></table>""", unsafe_allow_html=True)
 
 # ===== تاب 3: تحليل المصروفات =====
 with tab3:
     col_y3, col_m3 = st.columns([1, 2])
+    years = sorted(df["السنة"].dropna().unique().astype(int).tolist())
+    months_available = sorted(df["الشهر"].dropna().unique().astype(int).tolist())
     with col_y3:
         sel_year3 = st.selectbox("السنة", ["كل السنوات"] + [str(y) for y in years], key="year3")
     with col_m3:
@@ -237,11 +189,9 @@ with tab3:
         df_exp = df_exp[df_exp["الشهر"] == m3]
 
     exp_by_type = df_exp.groupby("النوع")["دائن"].sum().sort_values(ascending=False)
-    total_exp3  = exp_by_type.sum()
+    total_exp3 = exp_by_type.sum()
 
     st.metric("إجمالي المصروفات", f"{fmt(total_exp3)} ج")
-
-    st.markdown("<div class='section-title'>توزيع المصروفات حسب النوع</div>", unsafe_allow_html=True)
 
     rows = ""
     for nوع, val in exp_by_type.items():
@@ -251,11 +201,9 @@ with tab3:
           <td><strong>{nوع}</strong></td>
           <td class='num-neg'>{fmt(val)}</td>
           <td class='num'>{pct:.1f}%</td>
-          <td>
-            <div style='background:#e8edf3;border-radius:4px;height:8px;width:150px;overflow:hidden'>
+          <td><div style='background:#e8edf3;border-radius:4px;height:8px;width:150px;overflow:hidden'>
               <div style='height:100%;width:{bar_w}%;background:#c0392b;border-radius:4px'></div>
-            </div>
-          </td>
+          </div></td>
         </tr>"""
 
     rows += f"""<tr class='total-row'>
@@ -264,18 +212,18 @@ with tab3:
       <td class='num'>100%</td><td>—</td>
     </tr>"""
 
-    st.markdown(f"""
-    <table class='styled-table'>
+    st.markdown(f"""<table class='styled-table'>
       <thead><tr><th>نوع المصروف</th><th>القيمة</th><th>النسبة</th><th>التمثيل</th></tr></thead>
-      <tbody>{rows}</tbody>
-    </table>""", unsafe_allow_html=True)
+      <tbody>{rows}</tbody></table>""", unsafe_allow_html=True)
 
-    # تحليل شهري لكل نوع مصروف
-    st.markdown("<div class='section-title'>المصروفات شهرياً حسب النوع</div>", unsafe_allow_html=True)
+# ===== تاب 4: تحليل مصروفات شهري =====
+with tab4:
+    years = sorted(df["السنة"].dropna().unique().astype(int).tolist())
+    sel_year4 = st.selectbox("السنة", ["كل السنوات"] + [str(y) for y in years], key="year4")
 
     df_pivot = df[df["دائن"] > 0].copy()
-    if sel_year3 != "كل السنوات":
-        df_pivot = df_pivot[df_pivot["السنة"] == int(sel_year3)]
+    if sel_year4 != "كل السنوات":
+        df_pivot = df_pivot[df_pivot["السنة"] == int(sel_year4)]
 
     pivot = df_pivot.pivot_table(
         index="النوع", columns="الشهر", values="دائن", aggfunc="sum", fill_value=0
@@ -284,30 +232,39 @@ with tab3:
     pivot["الإجمالي"] = pivot.sum(axis=1)
     pivot = pivot.sort_values("الإجمالي", ascending=False)
 
-    # عرض الجدول
     header_cols = "<th>النوع</th>" + "".join(f"<th>{c}</th>" for c in pivot.columns)
     rows_p = ""
     for nوع, r in pivot.iterrows():
         cells = f"<td><strong>{nوع}</strong></td>"
         for c in pivot.columns:
             val = r[c]
-            cls = "num" if c != "الإجمالي" else "num-neg"
+            cls = "num-neg" if c == "الإجمالي" else "num"
             cells += f"<td class='{cls}'>{fmt(val) if val>0 else '—'}</td>"
         rows_p += f"<tr>{cells}</tr>"
 
-    st.markdown(f"""
-    <div style='overflow-x:auto'>
+    st.markdown(f"""<div style='overflow-x:auto'>
     <table class='styled-table'>
       <thead><tr>{header_cols}</tr></thead>
       <tbody>{rows_p}</tbody>
-    </table>
-    </div>""", unsafe_allow_html=True)
+    </table></div>""", unsafe_allow_html=True)
 
-    # تصدير
-    if st.button("⬇ تصدير تحليل المصروفات"):
+    if st.button("⬇ تصدير Excel"):
         import io
         buf = io.BytesIO()
         pivot.to_excel(buf, engine="openpyxl")
         st.download_button("📥 تحميل", buf.getvalue(),
                            file_name="تحليل_المصروفات.xlsx",
                            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+
+# ===== تاب 5: بيان الإيرادات =====
+with tab5:
+    try:
+        df_bayan = load_excel_from_drive("roaya_cash", "بيان", header=0)
+        if not df_bayan.empty:
+            st.markdown("<div class='section-title'>بيان الإيرادات والمصروفات</div>", unsafe_allow_html=True)
+            df_bayan = df_bayan.dropna(how='all')
+            st.dataframe(df_bayan, use_container_width=True, hide_index=True)
+        else:
+            st.info("لا توجد بيانات في شيت البيان")
+    except Exception as e:
+        st.error(f"خطأ في تحميل البيان: {e}")
