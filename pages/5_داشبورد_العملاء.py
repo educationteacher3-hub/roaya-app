@@ -10,25 +10,37 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
 * { font-family: 'Cairo', sans-serif !important; }
 html, body, [class*="css"] { direction: rtl; }
-[data-testid="metric-container"] {
-    background: white; border: 1px solid #d4dce5;
-    border-radius: 10px; padding: 14px 18px; border-right: 4px solid #c8953a;
-}
-.section-title {
-    font-size: 15px; font-weight: 700; color: #0f1923;
-    padding-right: 12px; border-right: 3px solid #c8953a;
-    margin: 20px 0 12px; direction: rtl;
-}
-.styled-table { width:100%; border-collapse:collapse; font-size:13px; direction:rtl; }
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+header { visibility: hidden; }
+[data-testid="stMetricValue"] { font-size: 16px !important; font-weight: 800 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+[data-testid="metric-container"] { background: white; border: 1px solid #d4dce5; border-radius: 10px; padding: 12px 14px; border-right: 4px solid #c8953a; }
+.section-title { font-size: 14px; font-weight: 700; color: #0f1923; padding-right: 10px; border-right: 3px solid #c8953a; margin: 16px 0 10px; direction: rtl; }
+.styled-table { width:100%; border-collapse:collapse; font-size:12px; direction:rtl; }
 .styled-table thead tr { background:#0f1923; color:white; }
-.styled-table thead th { padding:10px 14px; text-align:right; font-size:12px; white-space:nowrap; }
+.styled-table thead th { padding:8px 10px; text-align:right; font-size:11px; white-space:nowrap; }
 .styled-table tbody tr { border-bottom:1px solid #e8edf3; }
 .styled-table tbody tr:hover { background:#f7f9fb; }
 .styled-table tbody tr.total-row { background:#f0f4f8; font-weight:700; }
-.styled-table tbody td { padding:9px 14px; color:#3a4a58; }
+.styled-table tbody tr.net-pos { background:#e0f4f2; }
+.styled-table tbody tr.net-neg { background:#fdecea; }
+.styled-table tbody td { padding:7px 10px; color:#3a4a58; }
 .num-pos { color:#1a7f74; font-weight:600; font-family:monospace; }
 .num-neg { color:#c0392b; font-weight:600; font-family:monospace; }
-.num { font-family:monospace; font-size:12.5px; }
+.num { font-family:monospace; font-size:11.5px; }
+.badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:600; }
+.badge-green { background:#e0f4f2; color:#1a7f74; }
+.badge-red { background:#fdecea; color:#c0392b; }
+.badge-gold { background:#fdf3e3; color:#c8953a; }
+.badge-blue { background:#e8f0f7; color:#1a5276; }
+.badge-purple { background:#f5eef8; color:#6c3483; }
+.badge-orange { background:#fef0e7; color:#d35400; }
+@media (max-width: 768px) {
+    [data-testid="stMetricValue"] { font-size: 12px !important; }
+    .styled-table { font-size: 10px; }
+    .styled-table thead th { padding: 5px; font-size: 9px; }
+    .styled-table tbody td { padding: 4px 5px; }
+}
 </style>
 """, unsafe_allow_html=True)
 
