@@ -20,74 +20,39 @@ if not check_password():
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
-
 * { font-family: 'Cairo', sans-serif !important; }
 html, body, [class*="css"] { direction: rtl; }
-
-/* Metric cards */
-[data-testid="metric-container"] {
-    background: white;
-    border: 1px solid #d4dce5;
-    border-radius: 10px;
-    padding: 14px 18px;
-    border-right: 4px solid #c8953a;
+#MainMenu { visibility: hidden; }
+footer { visibility: hidden; }
+header { visibility: hidden; }
+[data-testid="stMetricValue"] { font-size: 16px !important; font-weight: 800 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+[data-testid="metric-container"] { background: white; border: 1px solid #d4dce5; border-radius: 10px; padding: 12px 14px; border-right: 4px solid #c8953a; }
+.section-title { font-size: 14px; font-weight: 700; color: #0f1923; padding-right: 10px; border-right: 3px solid #c8953a; margin: 16px 0 10px; direction: rtl; }
+.styled-table { width:100%; border-collapse:collapse; font-size:12px; direction:rtl; }
+.styled-table thead tr { background:#0f1923; color:white; }
+.styled-table thead th { padding:8px 10px; text-align:right; font-size:11px; white-space:nowrap; }
+.styled-table tbody tr { border-bottom:1px solid #e8edf3; }
+.styled-table tbody tr:hover { background:#f7f9fb; }
+.styled-table tbody tr.total-row { background:#f0f4f8; font-weight:700; }
+.styled-table tbody tr.net-pos { background:#e0f4f2; }
+.styled-table tbody tr.net-neg { background:#fdecea; }
+.styled-table tbody td { padding:7px 10px; color:#3a4a58; }
+.num-pos { color:#1a7f74; font-weight:600; font-family:monospace; }
+.num-neg { color:#c0392b; font-weight:600; font-family:monospace; }
+.num { font-family:monospace; font-size:11.5px; }
+.badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:600; }
+.badge-green { background:#e0f4f2; color:#1a7f74; }
+.badge-red { background:#fdecea; color:#c0392b; }
+.badge-gold { background:#fdf3e3; color:#c8953a; }
+.badge-blue { background:#e8f0f7; color:#1a5276; }
+.badge-purple { background:#f5eef8; color:#6c3483; }
+.badge-orange { background:#fef0e7; color:#d35400; }
+@media (max-width: 768px) {
+    [data-testid="stMetricValue"] { font-size: 12px !important; }
+    .styled-table { font-size: 10px; }
+    .styled-table thead th { padding: 5px; font-size: 9px; }
+    .styled-table tbody td { padding: 4px 5px; }
 }
-[data-testid="stMetricLabel"] { font-size: 12px !important; color: #7a8e9e !important; }
-[data-testid="stMetricValue"] { font-size: 22px !important; font-weight: 800 !important; }
-
-/* Sidebar */
-[data-testid="stSidebar"] {
-    background: #0f1923 !important;
-}
-[data-testid="stSidebar"] * { color: rgba(255,255,255,0.75) !important; }
-[data-testid="stSidebar"] .stButton button {
-    background: rgba(255,255,255,0.05) !important;
-    border: none !important; width: 100% !important;
-    text-align: right !important; color: rgba(255,255,255,0.7) !important;
-    font-size: 13px !important; padding: 8px 12px !important;
-    border-radius: 7px !important; margin-bottom: 3px !important;
-}
-[data-testid="stSidebar"] .stButton button:hover {
-    background: rgba(200,149,58,0.2) !important;
-    color: white !important;
-}
-
-/* Section headers */
-.section-title {
-    font-size: 15px; font-weight: 700; color: #0f1923;
-    padding-right: 12px; border-right: 3px solid #c8953a;
-    margin: 20px 0 12px; direction: rtl;
-}
-
-/* KPI banner */
-.kpi-banner {
-    background: linear-gradient(135deg, #0f1923 0%, #1a3a52 100%);
-    color: white; border-radius: 12px; padding: 20px 24px;
-    margin-bottom: 20px; display: flex;
-    justify-content: space-between; align-items: center;
-}
-
-/* Table styling */
-.styled-table {
-    width: 100%; border-collapse: collapse;
-    font-size: 13px; direction: rtl;
-}
-.styled-table thead tr { background: #0f1923; color: white; }
-.styled-table thead th { padding: 10px 14px; text-align: right; font-size: 12px; }
-.styled-table tbody tr { border-bottom: 1px solid #e8edf3; }
-.styled-table tbody tr:hover { background: #f7f9fb; }
-.styled-table tbody td { padding: 9px 14px; color: #3a4a58; }
-
-.num-pos { color: #1a7f74; font-weight: 600; font-family: monospace; }
-.num-neg { color: #c0392b; font-weight: 600; font-family: monospace; }
-.num     { font-family: monospace; font-size: 12.5px; }
-
-.badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600; }
-.badge-green  { background: #e0f4f2; color: #1a7f74; }
-.badge-red    { background: #fdecea; color: #c0392b; }
-.badge-gold   { background: #fdf3e3; color: #c8953a; }
-.badge-blue   { background: #e8f0f7; color: #1a5276; }
-.badge-purple { background: #f5eef8; color: #6c3483; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -117,6 +82,10 @@ with st.sidebar:
 
     st.markdown("<div style='font-size:10px;color:rgba(255,255,255,0.3);padding:8px 8px 4px;margin-bottom:4px;'>اتقان — الإمارات</div>", unsafe_allow_html=True)
     st.page_link("pages/4_اتقان.py",            label="🇦🇪 كشف الحساب")
+    st.page_link("pages/5_داشبورد_العملاء.py",  label="📊 داشبورد العملاء الكامل")
+    st.page_link("pages/6_كشف_حساب.py",          label="📋 كشف الحساب")
+    st.page_link("pages/7_بحث_ومقارنة.py",        label="🔍 بحث ومقارنة")
+    st.page_link("pages/8_التقرير_الأسبوعي.py",   label="📊 التقرير الأسبوعي")
 
     st.divider()
     if st.button("↻ تحديث البيانات", use_container_width=True):
