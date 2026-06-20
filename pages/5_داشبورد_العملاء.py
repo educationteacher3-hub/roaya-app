@@ -155,6 +155,12 @@ with tab2:
 
         # تحميل بيانات المستر
         df_m = load_excel_from_drive("clients", "الموردين", header=2)
+        df_clients_rates_sheet = load_excel_from_drive("clients", "قائمة الموردين والعملاء", header=0)
+        clients_rates_dict = {}
+        if not df_clients_rates_sheet.empty:
+            for _, row in df_clients_rates_sheet.iterrows():
+                if pd.notna(row.iloc[0]) and str(row.iloc[0]).strip():
+                    clients_rates_dict[str(row.iloc[0]).strip()] = pd.to_numeric(row.iloc[1], errors="coerce") or 0
         if not df_m.empty:
             try:
                 df_m.columns = ["م", "رقم الفاتورة", "قيمة الفاتورة", "النسبة", "القيمة",
@@ -163,6 +169,8 @@ with tab2:
                 df_m["قيمة الفاتورة"] = pd.to_numeric(df_m["قيمة الفاتورة"], errors="coerce").fillna(0)
                 df_m["القيمة"] = pd.to_numeric(df_m["القيمة"], errors="coerce").fillna(0)
                 df_m["تاريخ الفاتورة"] = pd.to_datetime(df_m["تاريخ الفاتورة"], errors="coerce")
+                df_m["نسبة_العميل"] = df_m["العميل"].map(clients_rates_dict).fillna(df_m["النسبة"])
+                df_m["عمولة_العميل"] = df_m["قيمة الفاتورة"] * df_m["نسبة_العميل"]
 
                 filtered = df_m.copy()
                 if sel_client != "كل العملاء":
@@ -175,7 +183,7 @@ with tab2:
                 c1, c2, c3 = st.columns(3)
                 with c1: st.metric("عدد الفواتير", f"{len(filtered):,}")
                 with c2: st.metric("إجمالي الفواتير", f"{fmt(filtered['قيمة الفاتورة'].sum())} ج")
-                with c3: st.metric("إجمالي العمولة", f"{fmt(filtered['القيمة'].sum())} ج")
+                with c3: st.metric("إجمالي العمولة", f"{fmt(filtered['عمولة_العميل'].sum())} ج")
 
                 st.markdown("<div class='section-title'>تفاصيل الفواتير</div>", unsafe_allow_html=True)
 
@@ -188,8 +196,8 @@ with tab2:
                       <td>{r['العميل']}</td>
                       <td>{r['المورد']}</td>
                       <td class='num'>{fmt(r['قيمة الفاتورة'])}</td>
-                      <td class='num'>{r['النسبة']*100:.1f}%</td>
-                      <td class='num-pos'>{fmt(r['القيمة'])}</td>
+                      <td class='num'>{r['نسبة_العميل']*100:.2f}%</td>
+                      <td class='num-pos'>{fmt(r['عمولة_العميل'])}</td>
                     </tr>"""
 
                 st.markdown(f"""
