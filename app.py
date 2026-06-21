@@ -80,6 +80,7 @@ with st.sidebar:
     st.page_link("pages/6_كشف_حساب.py",             label="📋 كشف الحساب")
     st.page_link("pages/7_بحث_ومقارنة.py",          label="🔍 بحث ومقارنة")
     st.page_link("pages/8_التقرير_الأسبوعي.py",     label="📊 التقرير الأسبوعي")
+    st.page_link("pages/9_فواتير_مكررة.py",          label="🔴 فواتير مكررة وتصدير")
 
     st.divider()
     if st.button("↻ تحديث البيانات", use_container_width=True):
