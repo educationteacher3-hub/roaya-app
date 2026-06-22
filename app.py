@@ -35,13 +35,6 @@ html, body, [class*="css"] { direction: rtl; }
 .num-pos { color:#1a7f74; font-weight:600; font-family:monospace; }
 .num-neg { color:#c0392b; font-weight:600; font-family:monospace; }
 .num { font-family:monospace; font-size:11.5px; }
-.badge { display:inline-block; padding:2px 8px; border-radius:20px; font-size:10px; font-weight:600; }
-.badge-green { background:#e0f4f2; color:#1a7f74; }
-.badge-red { background:#fdecea; color:#c0392b; }
-.badge-gold { background:#fdf3e3; color:#c8953a; }
-.badge-blue { background:#e8f0f7; color:#1a5276; }
-.badge-purple { background:#f5eef8; color:#6c3483; }
-.badge-orange { background:#fef0e7; color:#d35400; }
 .report-banner { background:linear-gradient(135deg,#0f1923 0%,#1a3a52 100%); color:white; border-radius:12px; padding:18px 24px; margin-bottom:20px; }
 .report-banner h2 { font-size:17px; font-weight:800; margin-bottom:3px; }
 .report-banner p { font-size:12px; opacity:0.6; }
@@ -53,9 +46,7 @@ with st.sidebar:
     st.markdown("""
     <div style='padding:16px 0 20px; border-bottom:1px solid rgba(255,255,255,0.08); margin-bottom:10px;'>
         <div style='display:flex; align-items:center; gap:10px;'>
-            <div style='width:38px;height:38px;background:#c8953a;border-radius:8px;
-                        display:flex;align-items:center;justify-content:center;
-                        font-size:18px;font-weight:900;color:#0f1923;'>ر</div>
+            <div style='width:38px;height:38px;background:#c8953a;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;color:#0f1923;'>ر</div>
             <div>
                 <div style='font-size:15px;font-weight:700;color:white;'>مكتب رؤية</div>
                 <div style='font-size:11px;color:rgba(255,255,255,0.4);'>النظام المالي</div>
@@ -65,22 +56,22 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     st.markdown("<div style='font-size:10px;color:rgba(255,255,255,0.3);padding:4px 8px;margin-bottom:4px;'>الرئيسية</div>", unsafe_allow_html=True)
-    st.page_link("app.py",                           label="📊 لوحة التحكم")
+    st.page_link("app.py", label="📊 لوحة التحكم")
 
     st.markdown("<div style='font-size:10px;color:rgba(255,255,255,0.3);padding:8px 8px 4px;'>رؤية — مصر</div>", unsafe_allow_html=True)
-    st.page_link("pages/1_خزينة.py",                label="🏦 حركة الخزينة")
-    st.page_link("pages/2_عملاء_وموردين.py",        label="👥 العملاء والموردين")
-    st.page_link("pages/3_تقارير.py",               label="📈 التقارير المالية")
+    st.page_link("pages/1_خزينة.py",             label="🏦 حركة الخزينة")
+    st.page_link("pages/2_عملاء_وموردين.py",     label="👥 العملاء والموردين")
+    st.page_link("pages/3_تقارير.py",            label="📈 التقارير المالية")
 
     st.markdown("<div style='font-size:10px;color:rgba(255,255,255,0.3);padding:8px 8px 4px;'>اتقان — الإمارات</div>", unsafe_allow_html=True)
-    st.page_link("pages/4_اتقان.py",                label="🇦🇪 كشف الحساب")
+    st.page_link("pages/4_اتقان.py",             label="🇦🇪 كشف الحساب")
 
     st.markdown("<div style='font-size:10px;color:rgba(255,255,255,0.3);padding:8px 8px 4px;'>تقارير متقدمة</div>", unsafe_allow_html=True)
-    st.page_link("pages/5_داشبورد_العملاء.py",      label="📊 داشبورد العملاء")
-    st.page_link("pages/6_كشف_حساب.py",             label="📋 كشف الحساب")
-    st.page_link("pages/7_بحث_ومقارنة.py",          label="🔍 بحث ومقارنة")
-    st.page_link("pages/8_التقرير_الأسبوعي.py",     label="📊 التقرير الأسبوعي")
-    st.page_link("pages/9_فواتير_مكررة.py",          label="🔴 فواتير مكررة وتصدير")
+    st.page_link("pages/5_داشبورد_العملاء.py",   label="📊 داشبورد العملاء")
+    st.page_link("pages/6_كشف_حساب.py",          label="📋 كشف الحساب")
+    st.page_link("pages/7_بحث_ومقارنة.py",       label="🔍 بحث ومقارنة")
+    st.page_link("pages/8_التقرير_الأسبوعي.py",  label="📊 التقرير الأسبوعي")
+    st.page_link("pages/9_فواتير_مكررة.py",      label="🔴 فواتير مكررة وتصدير")
 
     st.divider()
     if st.button("↻ تحديث البيانات", use_container_width=True):
@@ -109,7 +100,7 @@ def load_invoices_data():
         df_inv.columns = ["م","رقم الفاتورة","قيمة الفاتورة","نسبة_المورد","عمولة_المورد",
                           "تاريخ الفاتورة","جهة الصدور","العميل","المورد"]
         df_inv = df_inv.dropna(subset=["رقم الفاتورة"])
-        df_inv["قيمة الفاتورة"] = pd.to_numeric(df_inv["قيمة الفاتورة"], errors="coerce").fillna(0)
+        df_inv["قيمة الفاتورة"]  = pd.to_numeric(df_inv["قيمة الفاتورة"],  errors="coerce").fillna(0)
         df_inv["تاريخ الفاتورة"] = pd.to_datetime(df_inv["تاريخ الفاتورة"], errors="coerce")
         df_inv["نسبة_العميل"]    = df_inv["العميل"].map(clients_rates).fillna(0)
         df_inv["عمولة_العميل"]   = df_inv["قيمة الفاتورة"] * df_inv["نسبة_العميل"]
@@ -132,15 +123,14 @@ def load_invoices_data():
         s_pay  = pd.DataFrame()
     return df_inv, c_coll, s_pay
 
-df_khazina  = load_khazina()
-df_itqan    = load_itqan()
+df_khazina = load_khazina()
+df_itqan   = load_itqan()
 df_inv, df_coll, df_sup_pay = load_invoices_data()
 
 # ===== فلاتر الفترة =====
 st.title("📊 لوحة التحكم الرئيسية")
 
-col_f1, col_f2, col_f3 = st.columns([2, 2, 2])
-
+col_f1, col_f2, col_f3 = st.columns(3)
 years = sorted(df_khazina["السنة"].dropna().unique().astype(int).tolist()) if not df_khazina.empty else [2026]
 months_list = ["كل الشهور"] + [MONTHS_AR[m] for m in range(1,13)]
 
@@ -152,21 +142,14 @@ with col_f3:
     month_to = st.selectbox("إلى شهر", months_list, index=len(months_list)-1)
 
 rev_map = {v: k for k, v in MONTHS_AR.items()}
-
-# تحديد الفترة
 sel_year_int = int(sel_year)
-if month_from == "كل الشهور":
-    from_ts = pd.Timestamp(f"{sel_year_int}-01-01")
-else:
-    from_ts = pd.Timestamp(f"{sel_year_int}-{rev_map[month_from]:02d}-01")
-
+from_ts = pd.Timestamp(f"{sel_year_int}-{rev_map[month_from]:02d}-01") if month_from != "كل الشهور" else pd.Timestamp(f"{sel_year_int}-01-01")
 if month_to == "كل الشهور":
     to_ts = pd.Timestamp(f"{sel_year_int}-12-31")
 else:
     m_to = rev_map[month_to]
-    # آخر يوم في الشهر
-    next_m = m_to + 1 if m_to < 12 else 1
-    next_y = sel_year_int if m_to < 12 else sel_year_int + 1
+    next_m = m_to+1 if m_to<12 else 1
+    next_y = sel_year_int if m_to<12 else sel_year_int+1
     to_ts = pd.Timestamp(f"{next_y}-{next_m:02d}-01") - pd.Timedelta(days=1)
 
 st.markdown(f"""
@@ -176,15 +159,14 @@ st.markdown(f"""
 </div>""", unsafe_allow_html=True)
 
 # ===== فلترة البيانات =====
-kh = df_khazina[(df_khazina["التاريخ"]>=from_ts)&(df_khazina["التاريخ"]<=to_ts)] if not df_khazina.empty else pd.DataFrame()
-inv_f = df_inv[(df_inv["تاريخ الفاتورة"]>=from_ts)&(df_inv["تاريخ الفاتورة"]<=to_ts)] if not df_inv.empty else pd.DataFrame()
-coll_f = df_coll[(df_coll["التاريخ"]>=from_ts)&(df_coll["التاريخ"]<=to_ts)] if not df_coll.empty else pd.DataFrame()
-pay_f = df_sup_pay[(df_sup_pay["التاريخ"]>=from_ts)&(df_sup_pay["التاريخ"]<=to_ts)] if not df_sup_pay.empty else pd.DataFrame()
+kh      = df_khazina[(df_khazina["التاريخ"]>=from_ts)&(df_khazina["التاريخ"]<=to_ts)] if not df_khazina.empty else pd.DataFrame()
+inv_f   = df_inv[(df_inv["تاريخ الفاتورة"]>=from_ts)&(df_inv["تاريخ الفاتورة"]<=to_ts)] if not df_inv.empty else pd.DataFrame()
+coll_f  = df_coll[(df_coll["التاريخ"]>=from_ts)&(df_coll["التاريخ"]<=to_ts)] if not df_coll.empty else pd.DataFrame()
+pay_f   = df_sup_pay[(df_sup_pay["التاريخ"]>=from_ts)&(df_sup_pay["التاريخ"]<=to_ts)] if not df_sup_pay.empty else pd.DataFrame()
 itqan_f = df_itqan[(df_itqan["التاريخ"]>=from_ts)&(df_itqan["التاريخ"]<=to_ts)] if not df_itqan.empty else pd.DataFrame()
 
-# ===== 1. الملخص الإجمالي =====
-st.markdown("<div class='section-title'>📋 الملخص الإجمالي للفترة</div>", unsafe_allow_html=True)
-
+# ===== 1. ملخص الفواتير =====
+st.markdown("<div class='section-title'>📋 ملخص الفواتير</div>", unsafe_allow_html=True)
 c1, c2, c3 = st.columns(3)
 with c1: st.metric("📋 عدد الفواتير",          f"{len(inv_f):,}")
 with c2: st.metric("💼 إجمالي قيمة الفواتير",  f"{fmt(inv_f['قيمة الفاتورة'].sum() if not inv_f.empty else 0)} ج")
@@ -195,20 +177,31 @@ with c4: st.metric("🏭 عمولات مسؤولي التوريد", f"{fmt(inv_f
 with c5: st.metric("💰 إجمالي التحصيلات",      f"{fmt(coll_f['المبلغ'].sum() if not coll_f.empty else 0)} ج")
 with c6: st.metric("💸 سدادات المسؤولين",      f"{fmt(pay_f['المبلغ'].sum() if not pay_f.empty else 0)} ج")
 
-# ===== 2. تحليل الخزينة =====
-st.markdown("<div class='section-title'>🏦 تحليل إيرادات ومصروفات الخزينة</div>", unsafe_allow_html=True)
-
+# ===== 2. ملخص الخزينة =====
+st.markdown("<div class='section-title'>🏦 ملخص الخزينة</div>", unsafe_allow_html=True)
 if not kh.empty:
     total_in  = kh["مدين"].sum()
     total_out = kh["دائن"].sum()
     net       = total_in - total_out
-
-    c1, c2, c3, c4 = st.columns(4)
+    c1,c2,c3,c4 = st.columns(4)
     with c1: st.metric("📥 الإيرادات",   f"{fmt(total_in)} ج")
     with c2: st.metric("📤 المصروفات",   f"{fmt(total_out)} ج")
     with c3: st.metric("📊 الصافي",      f"{fmt(net)} ج")
-    with c4: st.metric("🔢 عدد الحركات", f"{len(kh):,}")
+    with c4: st.metric("💰 الرصيد الحالي", f"{fmt(df_khazina['الرصيد'].iloc[-1])} ج")
 
+    # ملخص شهري للخزينة
+    st.markdown("<div class='section-title'>📅 الملخص الشهري</div>", unsafe_allow_html=True)
+    monthly = kh.groupby("الشهر").agg(إيرادات=("مدين","sum"), مصروفات=("دائن","sum")).reset_index()
+    monthly["صافي"] = monthly["إيرادات"] - monthly["مصروفات"]
+    rows = ""
+    for _, r in monthly.sort_values("الشهر").iterrows():
+        nc = "num-pos" if r["صافي"]>=0 else "num-neg"
+        sign = "+" if r["صافي"]>=0 else ""
+        rows += f"<tr><td><strong>{MONTHS_AR.get(int(r['الشهر']),'')}</strong></td><td class='num-pos'>{fmt(r['إيرادات'])}</td><td class='num-neg'>{fmt(r['مصروفات'])}</td><td class='{nc}'>{sign}{fmt(r['صافي'])}</td></tr>"
+    rows += f"<tr class='total-row'><td>الإجمالي</td><td class='num-pos'>{fmt(total_in)}</td><td class='num-neg'>{fmt(total_out)}</td><td class='{"num-pos" if net>=0 else "num-neg"}'>{("+" if net>=0 else "") + fmt(net)}</td></tr>"
+    st.markdown(f"<table class='styled-table'><thead><tr><th>الشهر</th><th>الإيرادات</th><th>المصروفات</th><th>الصافي</th></tr></thead><tbody>{rows}</tbody></table>", unsafe_allow_html=True)
+
+    # تحليل الإيرادات والمصروفات
     col_r, col_e = st.columns(2)
     with col_r:
         st.markdown("<div class='section-title'>📥 الإيرادات حسب النوع</div>", unsafe_allow_html=True)
@@ -230,41 +223,18 @@ if not kh.empty:
         rows += f"<tr class='total-row'><td>الإجمالي</td><td class='num-neg'>{fmt(total_out)}</td><td>100%</td><td></td></tr>"
         st.markdown(f"<table class='styled-table'><thead><tr><th>النوع</th><th>المبلغ</th><th>النسبة</th><th></th></tr></thead><tbody>{rows}</tbody></table>", unsafe_allow_html=True)
 
-    # الملخص الشهري للخزينة
-    st.markdown("<div class='section-title'>📅 الملخص الشهري للخزينة</div>", unsafe_allow_html=True)
-    monthly = kh.groupby("الشهر").agg(إيرادات=("مدين","sum"), مصروفات=("دائن","sum")).reset_index()
-    monthly["صافي"] = monthly["إيرادات"] - monthly["مصروفات"]
-    rows = ""
-    for _, r in monthly.sort_values("الشهر").iterrows():
-        nc = "num-pos" if r["صافي"]>=0 else "num-neg"
-        sign = "+" if r["صافي"]>=0 else ""
-        rows += f"<tr><td><strong>{MONTHS_AR.get(int(r['الشهر']),'')}</strong></td><td class='num-pos'>{fmt(r['إيرادات'])}</td><td class='num-neg'>{fmt(r['مصروفات'])}</td><td class='{nc}'>{sign}{fmt(r['صافي'])}</td></tr>"
-    rows += f"<tr class='total-row'><td>الإجمالي</td><td class='num-pos'>{fmt(total_in)}</td><td class='num-neg'>{fmt(total_out)}</td><td class='{"num-pos" if net>=0 else "num-neg"}'>{'+ ' if net>=0 else ''}{fmt(net)}</td></tr>"
-    st.markdown(f"<table class='styled-table'><thead><tr><th>الشهر</th><th>الإيرادات</th><th>المصروفات</th><th>الصافي</th></tr></thead><tbody>{rows}</tbody></table>", unsafe_allow_html=True)
-
 # ===== 3. ملخص اتقان =====
-st.markdown("<div class='section-title'>🇦🇪 ملخص حركات اتقان للفترة</div>", unsafe_allow_html=True)
-
+st.markdown("<div class='section-title'>🇦🇪 ملخص اتقان</div>", unsafe_allow_html=True)
 if not itqan_f.empty:
-    c1, c2, c3, c4 = st.columns(4)
+    c1,c2,c3,c4 = st.columns(4)
     with c1: st.metric("📥 إيداعات (AED)",  f"{fmt(itqan_f['مدين AED'].sum(),2)}")
     with c2: st.metric("📤 مصروفات (AED)", f"{fmt(itqan_f['دائن AED'].sum(),2)}")
     with c3: st.metric("📊 الصافي (AED)",   f"{fmt(itqan_f['مدين AED'].sum()-itqan_f['دائن AED'].sum(),2)}")
     with c4: st.metric("🔢 عدد الحركات",   f"{len(itqan_f):,}")
-
-    rows = ""
-    for _, r in itqan_f.iloc[::-1].head(50).iterrows():
-        date_str = r["التاريخ"].strftime("%d/%m/%Y") if pd.notna(r["التاريخ"]) else "—"
-        is_in = r["مدين AED"]>0
-        badge = "<span style='background:#e0f4f2;color:#1a7f74;padding:1px 6px;border-radius:8px;font-size:10px'>إيداع</span>" if is_in else "<span style='background:#fdecea;color:#c0392b;padding:1px 6px;border-radius:8px;font-size:10px'>صرف</span>"
-        debit  = f"<span class='num-pos'>{fmt(r['مدين AED'],2)}</span>" if r["مدين AED"]>0 else "—"
-        credit = f"<span class='num-neg'>{fmt(r['دائن AED'],2)}</span>" if r["دائن AED"]>0 else "—"
-        rows += f"<tr><td class='num'>{date_str}</td><td>{str(r['البيان'])[:40]}</td><td>{badge}</td><td>{debit}</td><td>{credit}</td><td class='{"num-neg" if r["الرصيد AED"]<0 else "num-pos"}'>{fmt(r['الرصيد AED'],2)}</td></tr>"
-    st.markdown(f"<div style='overflow-x:auto'><table class='styled-table'><thead><tr><th>التاريخ</th><th>البيان</th><th>النوع</th><th>مدين AED</th><th>دائن AED</th><th>الرصيد AED</th></tr></thead><tbody>{rows}</tbody></table></div>", unsafe_allow_html=True)
 else:
     st.info("لا توجد حركات اتقان في هذه الفترة")
 
-# ===== 4. فواتير الفترة =====
+# ===== 4. ملخص الفواتير حسب العميل =====
 if not inv_f.empty:
     st.markdown("<div class='section-title'>📋 ملخص الفواتير حسب العميل</div>", unsafe_allow_html=True)
     by_client = inv_f.groupby("العميل").agg(
@@ -279,30 +249,3 @@ if not inv_f.empty:
         rows += f"<tr><td>{r['العميل']}</td><td class='num'>{fmt(r['عدد'])}</td><td class='num'>{fmt(r['قيمة'])}</td><td class='num-pos'>{fmt(r['عمولة_عميل'])}</td><td class='num-pos'>{fmt(r['عمولة_مورد'])}</td></tr>"
     rows += f"<tr class='total-row'><td>الإجمالي</td><td class='num'>{fmt(len(inv_f))}</td><td class='num'>{fmt(inv_f['قيمة الفاتورة'].sum())}</td><td class='num-pos'>{fmt(inv_f['عمولة_العميل'].sum())}</td><td class='num-pos'>{fmt(inv_f['عمولة_المورد_ف'].sum())}</td></tr>"
     st.markdown(f"<table class='styled-table'><thead><tr><th>العميل</th><th>عدد الفواتير</th><th>قيمة الفواتير</th><th>عمولة العميل</th><th>عمولة المورد</th></tr></thead><tbody>{rows}</tbody></table>", unsafe_allow_html=True)
-
-# ===== 5. التحصيلات والسدادات =====
-col_c, col_p = st.columns(2)
-
-with col_c:
-    st.markdown("<div class='section-title'>💰 التحصيلات</div>", unsafe_allow_html=True)
-    if not coll_f.empty:
-        rows = ""
-        for _, r in coll_f.iterrows():
-            date_str = r["التاريخ"].strftime("%d/%m/%Y") if pd.notna(r["التاريخ"]) else "—"
-            rows += f"<tr><td class='num'>{date_str}</td><td>{r['العميل']}</td><td class='num-pos'>{fmt(r['المبلغ'])}</td></tr>"
-        rows += f"<tr class='total-row'><td colspan='2'>الإجمالي</td><td class='num-pos'>{fmt(coll_f['المبلغ'].sum())}</td></tr>"
-        st.markdown(f"<table class='styled-table'><thead><tr><th>التاريخ</th><th>العميل</th><th>المبلغ</th></tr></thead><tbody>{rows}</tbody></table>", unsafe_allow_html=True)
-    else:
-        st.info("لا توجد تحصيلات في هذه الفترة")
-
-with col_p:
-    st.markdown("<div class='section-title'>💸 سدادات مسؤولي التوريد</div>", unsafe_allow_html=True)
-    if not pay_f.empty:
-        rows = ""
-        for _, r in pay_f.iterrows():
-            date_str = r["التاريخ"].strftime("%d/%m/%Y") if pd.notna(r["التاريخ"]) else "—"
-            rows += f"<tr><td class='num'>{date_str}</td><td>{r['المسؤول']}</td><td class='num-pos'>{fmt(r['المبلغ'])}</td></tr>"
-        rows += f"<tr class='total-row'><td colspan='2'>الإجمالي</td><td class='num-pos'>{fmt(pay_f['المبلغ'].sum())}</td></tr>"
-        st.markdown(f"<table class='styled-table'><thead><tr><th>التاريخ</th><th>المسؤول</th><th>المبلغ</th></tr></thead><tbody>{rows}</tbody></table>", unsafe_allow_html=True)
-    else:
-        st.info("لا توجد سدادات في هذه الفترة")
