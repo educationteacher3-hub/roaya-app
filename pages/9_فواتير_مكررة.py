@@ -81,23 +81,23 @@ with tab1:
         col_f1, col_f2 = st.columns(2)
         with col_f1:
             dup_type = st.selectbox("نوع الكشف", [
-                "تكرار رقم الفاتورة مع نفس المورد",
-                "تكرار رقم الفاتورة مع أي مورد",
-                "تكرار رقم الفاتورة مع نفس العميل والمورد",
-                "فواتير بنفس القيمة والتاريخ والعميل"
+                "رقم الفاتورة + قيمة الفاتورة (الأدق)",
+                "رقم الفاتورة + قيمة الفاتورة + المورد",
+                "رقم الفاتورة + قيمة الفاتورة + العميل + المورد",
+                "رقم الفاتورة فقط (أوسع نطاقاً)"
             ])
         with col_f2:
             min_dup = st.number_input("الحد الأدنى للتكرار", min_value=2, value=2)
 
         # تطبيق منطق الكشف
-        if dup_type == "تكرار رقم الفاتورة مع نفس المورد":
-            dup_keys = ["رقم الفاتورة", "المورد"]
-        elif dup_type == "تكرار رقم الفاتورة مع أي مورد":
-            dup_keys = ["رقم الفاتورة"]
-        elif dup_type == "تكرار رقم الفاتورة مع نفس العميل والمورد":
-            dup_keys = ["رقم الفاتورة", "العميل", "المورد"]
+        if dup_type == "رقم الفاتورة + قيمة الفاتورة (الأدق)":
+            dup_keys = ["رقم الفاتورة", "قيمة الفاتورة"]
+        elif dup_type == "رقم الفاتورة + قيمة الفاتورة + المورد":
+            dup_keys = ["رقم الفاتورة", "قيمة الفاتورة", "المورد"]
+        elif dup_type == "رقم الفاتورة + قيمة الفاتورة + العميل + المورد":
+            dup_keys = ["رقم الفاتورة", "قيمة الفاتورة", "العميل", "المورد"]
         else:
-            dup_keys = ["قيمة الفاتورة", "العميل", "المورد"]
+            dup_keys = ["رقم الفاتورة"]
 
         # حساب التكرار
         df_count = df.groupby(dup_keys).size().reset_index(name="عدد_التكرار")
@@ -288,7 +288,7 @@ with tab2:
                 ).reset_index()
                 monthly_sum.to_excel(writer, sheet_name="الملخص الشهري", index=False)
                 # الفواتير المكررة
-                dup_check = filtered[filtered.duplicated(subset=["رقم الفاتورة","المورد"], keep=False)]
+                dup_check = filtered[filtered.duplicated(subset=["رقم الفاتورة","قيمة الفاتورة"], keep=False)]
                 if not dup_check.empty:
                     dup_check.to_excel(writer, sheet_name="فواتير مكررة", index=False)
             st.download_button(
